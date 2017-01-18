@@ -31,11 +31,13 @@ module Corral
       rule_for(subject).add_grant(action, block)
     end
 
-    # Inverse of #can.
+    # Adds a denying-access rule. Overrides previous #can definitions.
     #
-    # @see #can
-    def cannot(action, subject, &block)
-      rule_for(subject).add_deny(action, block)
+    # @param action [Symbol] The action, represented as a symbol.
+    # @param subject [Object] The subject.
+    def cannot(action, subject)
+      raise ArgumentError, '#cannot does not support granular matching by block.' if block_given?
+      rule_for(subject).add_deny(action)
     end
 
     # Allow the object to perform any action on any subject.
@@ -76,7 +78,7 @@ module Corral
     def lookup_rule(subject)
       case subject
       when Symbol, Module
-        r = subjects[subject] || subjects[:all] || NullRule
+        subjects[subject] || subjects[:all] || NullRule
       else
         subjects[subject.class] || NullRule
       end

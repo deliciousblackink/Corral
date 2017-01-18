@@ -14,12 +14,12 @@ module Corral
       @actions[action] = (block || true)
     end
 
-    # Add a denying ACL for a particular action.
+    # Add a denying ACL for a particular action, which overrides
+    # granting ACLs, including :manage.
     #
     # @param action [symbol] The action.
-    # @param block An optional block for granularity.
-    def add_deny(action, block)
-      @actions[action] = (block || false)
+    def add_deny(action)
+      @actions[action] = false
     end
 
     # Return whether or not an object can perform a particular action on a subject
@@ -28,6 +28,9 @@ module Corral
     # @param args [Hash] Variable arguments for more granular matching.
     # @return [Boolean] True or false.
     def authorized?(action, subject, args)
+      deny = @actions[action]
+      return false if deny == false
+
       block = @actions[:manage] || @actions[action]
       return false unless block
       return true if block == true
